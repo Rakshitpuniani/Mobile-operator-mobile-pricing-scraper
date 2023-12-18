@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
+import pandas as pd
 import time
 import re
 
@@ -57,17 +58,20 @@ for url in vodafone_url:
 urls = 'https://www.vodafone.com.au/prepaid/mobile-phones'
 driver.get(urls)
 soup = read_page(urls)
-container = soup.find('div', {'data-testid':'device-listing'})
+container = soup.find('div', {'data-testid':"device-listing"})
 sp1 = container.find_all("a",href=True)
 for models in sp1:
-    name = models.find(class_=re.compile('^RichText__Root')).text
-    price = models.find(class_=re.compile('^Pricestyles__Amount')).text
-    vodafone['Name'].append(name)
-    vodafone['storage'].append("")
-    vodafone['price'].append(price)
-    vodafone['Status'].append('Prepaid')
+    try:
+        name = models.find(class_=re.compile('^RichText__Root')).text
+        price = models.find(class_=re.compile('^Pricestyles__Amount')).text
+        vodafone['Name'].append(name)
+        vodafone['storage'].append("")
+        vodafone['price'].append(price)
+        vodafone['Status'].append('Prepaid')
+    except:
+        print(models.get('href'))
 vodafone_df = pd.DataFrame(vodafone)
-vodafone_df.to_csv("vodafone_phone_prices.CSV")
+vodafone_df.to_csv("Output/vodafone_phone_prices.CSV")
 driver.quit()
 
 

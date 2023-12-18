@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -54,24 +55,42 @@ for url in Telstra_url:
             float(soup.find('span', {'data-mobile-product-total': "data-mobile-product-total"}).text.strip('$')) * 36,
             2))
         Telstra['Status'].append('Contract')
-        for storage_op in range(len(storage_options) - 1, 0, -1):
-            stor_temp = str(storage_options[storage_op].text.strip())
-            for op in container_web:
-                ops = str(op.text.strip())
-                if stor_temp == ops:
-                    op.click()
-                    soup = BeautifulSoup(driver.page_source, "html.parser")
-                    storage = ops
-                    price = round(float(
-                        soup.find('span', {'data-mobile-product-total': "data-mobile-product-total"}).text.strip(
-                            '$')) * 36,
-                                  2)
-                    Telstra['Name'].append(name)
-                    Telstra['storage'].append(storage)
-                    Telstra['price'].append(price)
-                    Telstra['Status'].append('Contract')
-                    break
+        try:
+            for storage_op in range(len(storage_options) - 1, 0, -1):
+                stor_temp = str(storage_options[storage_op].text.strip())
+                for op in container_web:
+                    ops = str(op.text.strip())
+                    if stor_temp == ops:
+                        op.click()
+                        soup = BeautifulSoup(driver.page_source, "html.parser")
+                        storage = ops
+                        price = round(float(
+                            soup.find('span', {'data-mobile-product-total': "data-mobile-product-total"}).text.strip(
+                                '$')) * 36,
+                                      2)
+                        Telstra['Name'].append(name)
+                        Telstra['storage'].append(storage)
+                        Telstra['price'].append(price)
+                        Telstra['Status'].append('Contract')
+                        break
+        except:
+            print(url)
 
+# Prepaid
 
-Print(Telstra)
+url = 'https://www.telstra.com.au/mobile-phones/prepaid-mobiles/prepaid-phones'
+driver.get(url)
+soup = BeautifulSoup(driver.page_source, "html.parser")
+container = soup.find_all('div', re.compile('^lego-device-product-box__wrapper'))
+for div in container:
+    name = div.find('a').get('href').split('/')[3]
+    price = div.find('div', class_ =re.compile('^lego-device-product-box__price')).text.strip('$')
+    Telstra['Name'].append(name)
+    Telstra['storage'].append('')
+    Telstra['price'].append(price)
+    Telstra['Status'].append('Prepaid')
+
+Telstra_df = pd.DataFrame(Telstra)
+Telstra_df.to_csv("Output/Telstra_phone_prices.CSV")
+driver.quit()
 
