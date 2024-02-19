@@ -39,7 +39,7 @@ vodafone_url = []
 for link in mobile_link:
     vodafone_url.append('https://www.vodafone.com.au' + link)
 for url in vodafone_url:
-    response = requests.get(url)
+    response = requests.get(url, verify = False)
     soup = BeautifulSoup(response.content, 'html.parser')
     storage = []
     name = url.split('/')[len(url.split('/')) - 1].replace("-", " ")
